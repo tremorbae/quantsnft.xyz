@@ -1,4 +1,21 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Hero Video Load Handler
+    window.addEventListener('load', function() {
+        const heroVideo = document.getElementById('heroVideo');
+        if (heroVideo) {
+            // Wait for the video to be ready to play
+            heroVideo.addEventListener('loadeddata', function() {
+                // Small delay to ensure styles are applied
+                setTimeout(() => {
+                    heroVideo.play().catch(e => console.log('Autoplay prevented:', e));
+                }, 100);
+            });
+            
+            // Preload the video
+            heroVideo.load();
+        }
+    });
+
     // Lightbox functionality
     const lightbox = document.getElementById('lightbox');
     const lightboxImg = document.getElementById('lightbox-img');
