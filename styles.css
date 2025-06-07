@@ -251,20 +251,22 @@ a[href*="discord"].mint-button:active {
 }
 
 /* Image Modal Styles */
+:root {
+    --vh: 1vh; /* Will be set by JavaScript */
+}
+
 .modal {
     display: none;
     position: fixed;
     z-index: 9999;
     left: 0;
     top: 0;
-    right: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh; /* Fallback for browsers that don't support custom properties */
+    height: calc(var(--vh, 1vh) * 100);
     min-height: -webkit-fill-available; /* For mobile browsers */
     background-color: rgba(0, 0, 0, 0.9);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    overflow: hidden; /* Changed to hidden to prevent double scrollbars */
     opacity: 0;
     transition: opacity 0.3s ease;
     padding: 20px;
@@ -274,14 +276,31 @@ a[href*="discord"].mint-button:active {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    /* Fix for mobile viewport units */
-    height: 100vh;
-    height: -webkit-fill-available;
-    height: -moz-available;
-    height: stretch;
-    /* Prevent content from being hidden behind browser UI */
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-top: env(safe-area-inset-top, 0px);
+    overscroll-behavior: contain; /* Prevent scroll chaining */
+}
+
+/* Make modal content scrollable */
+.modal-container {
+    position: relative;
+    width: 90%;
+    max-width: 800px;
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    margin: 5vh auto;
+    border: none;
+}
+
+/* Mobile-specific styles */
+@supports (-webkit-touch-callout: none) {
+    .modal {
+        height: -webkit-fill-available;
+    }
 }
 
 .modal.show {
@@ -309,7 +328,6 @@ a[href*="discord"].mint-button:active {
     .modal-container {
         width: 90%;
         max-width: 1200px;
-        max-height: 90vh;
         background: #fff;
         border-radius: 16px;
         overflow: hidden;
@@ -659,14 +677,8 @@ a[href*="discord"].mint-button:active {
     .modal-container {
         width: 90%;
         max-width: 500px;
-        max-height: 90vh;
-        max-height: -webkit-fill-available;
-        max-height: -moz-available;
-        max-height: stretch;
+        max-height: 80vh;
         margin: 5vh auto;
-        position: relative;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
     }
     
     .modal-content {
