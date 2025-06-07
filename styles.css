@@ -801,14 +801,43 @@ a[href*="discord"].mint-button:active {
     z-index: 0; /* Lower z-index to be behind the video overlay */
 }
 
+/* Cherry Blossom Glow Effect */
 .hero h1 {
     font-size: 4rem;
     margin-bottom: 1rem;
     letter-spacing: 3px;
     position: relative;
-    z-index: 0; /* Ensure text is behind the video overlay */
-    color: #ffffff !important; /* Force white color */
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); /* Enhance text shadow for better visibility */
+    z-index: 1; /* Ensure text is above the glow */
+    color: #ffffff !important;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.hero h1 .glow-text {
+    position: relative;
+    display: inline-block;
+    z-index: 1;
+}
+
+.hero h1 .glow-text::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180%;  /* Reduced from 250% */
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 183, 197, 0) 0%,
+        rgba(255, 183, 197, 0.7) 25%,    /* Reduced opacity */
+        rgba(255, 183, 197, 0.6) 50%,    /* Reduced opacity */
+        rgba(255, 183, 197, 0.7) 75%,    /* Reduced opacity */
+        rgba(255, 183, 197, 0) 100%
+    );
+    filter: blur(12px);
+    z-index: -1;
+    opacity: 0.6;  /* Reduced overall opacity */
+    mix-blend-mode: screen;
 }
 
 .hero .mint-button {
@@ -1733,6 +1762,14 @@ header.scrolled {
     
     .mint-details {
         width: 100%;
+    }
+}
+
+@media (max-width: 575px) {
+    .hero h1 {
+        padding-bottom: 6rem; /* Significantly increased bottom padding */
+        margin-bottom: 2rem; /* Increased margin for more spacing */
+        line-height: 1.2; /* Improve line height for better readability */
     }
 }
 
