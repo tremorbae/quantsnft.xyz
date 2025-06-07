@@ -144,7 +144,7 @@ export const nftTraits = {
             { name: 'Clothing', value: 'Black Belt', rarity: 'Epic' }
         ]
     },
-    10: {
+    11: {
         title: 'Quant #358',
         traits: [
             { name: 'Background', value: 'Cotton Candy', rarity: 'Common' },
