@@ -181,5 +181,17 @@
 
     <script src="nftData.js" type="module"></script>
     <script src="script.js" type="module"></script>
+    <script>
+        // Scroll to top on page load/refresh
+        window.onload = function() {
+            // Scroll to top immediately
+            window.scrollTo(0, 0);
+            
+            // Handle browsers that may restore scroll position after load
+            if (history.scrollRestoration) {
+                history.scrollRestoration = 'manual';
+            }
+        };
+    </script>
 </body>
 </html>
