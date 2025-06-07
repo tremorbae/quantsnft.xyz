@@ -744,11 +744,20 @@ function updateModalData(nftId) {
 function initModal() {
     const modal = document.getElementById('imageModal');
     const modalImg = document.getElementById('enlargedImage');
-    const closeBtn = document.querySelector('.close-modal');
+    let closeBtn = document.querySelector('.close-modal');
     
-    if (!modal || !modalImg || !closeBtn) {
+    if (!modal || !modalImg) {
         console.warn('Modal elements not found');
         return () => {}; // Return empty cleanup function
+    }
+    
+    // Create close button if it doesn't exist
+    if (!closeBtn) {
+        closeBtn = document.createElement('span');
+        closeBtn.className = 'close-modal';
+        closeBtn.setAttribute('aria-label', 'Close modal');
+        closeBtn.innerHTML = '&times;';
+        modal.insertBefore(closeBtn, modal.firstChild);
     }
     
     // Function to handle image click
