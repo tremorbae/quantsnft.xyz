@@ -279,7 +279,7 @@ a[href*="discord"].mint-button:active {
     overscroll-behavior: contain; /* Prevent scroll chaining */
 }
 
-/* Make modal content scrollable */
+/* Modal container styles */
 .modal-container {
     position: relative;
     width: 90%;
@@ -288,11 +288,10 @@ a[href*="discord"].mint-button:active {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    margin: 0 auto;
+    margin: 5vh auto;
     display: flex;
     flex-direction: column;
     max-height: 90vh;
-    margin: 5vh auto;
     border: none;
 }
 
@@ -310,49 +309,27 @@ a[href*="discord"].mint-button:active {
     align-items: center;
 }
 
+/* Desktop styles */
 @media (min-width: 1151px) {
-    .modal.show .modal-container {
+    .modal-container {
         width: 95%;
         max-width: 1200px;
-        max-height: 90vh;
-        margin: 5vh auto;
         flex-direction: row;
     }
     
-    .modal.show .modal-content {
+    .modal-content {
         width: 100%;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain;
     }
-}
 
-@media (min-width: 1151px) {
     .modal-container {
-        width: 90%;
-        max-width: 1200px;
-        background: #fff;
-        border-radius: 16px;
-        overflow: hidden;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-        display: flex;
-        flex-direction: row;
-        max-height: 90vh;
-        margin: 5vh auto;
+        flex-direction: column;
+        max-height: 80vh;
+        margin: 10vh auto;
         border: none;
     }
-}
-
-.modal-container {
-    position: relative;
-    width: 80%;
-    max-width: 800px;
-    background: #fff;
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    display: flex;
-    flex-direction: column;
-    max-height: 80vh;
-    margin: 10vh auto;
-    border: none;
 }
 
 .modal-content {
@@ -1219,7 +1196,7 @@ a[href*="discord"].mint-button:active {
     flex: 1;
     min-width: 300px;
     text-align: left;
-    padding: 0 20px;
+    padding: 0 10px;
 }
 
 .button-container {
@@ -1236,6 +1213,18 @@ a[href*="discord"].mint-button:active {
     text-align: center;
 }
 
+/* Specific adjustment for 754px and below */
+@media (max-width: 754px) {
+    .about-text,
+    .about-text p {
+        font-size: 1.1rem !important;
+        line-height: 1.4;
+    }
+    .about-text p strong {
+        font-size: 1.2em !important; /* Slightly larger for emphasis */
+    }
+}
+
 /* Mobile styles */
 @media (max-width: calc(var(--breakpoint-sm) - 1px)) {
     .about-content {
@@ -1247,6 +1236,11 @@ a[href*="discord"].mint-button:active {
     .about-text {
         text-align: center;
         padding: 0;
+        font-size: 0.9rem; /* Slightly smaller font size for mobile */
+    }
+    
+    .about-text p {
+        font-size: 0.9rem; /* Ensure all paragraphs in about text are smaller */
     }
     
     /* Keep only the gallery h2 size for both sections */
@@ -1926,6 +1920,11 @@ header.scrolled {
     
     .nft-image, .mint-details {
         width: 100%;
+    }
+    
+    /* Reduce font size for mint details on smaller screens */
+    .mint-details {
+        font-size: 0.95rem;
     }
     
     .mint-info {

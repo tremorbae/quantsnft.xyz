@@ -655,6 +655,28 @@ const initGalleryCarousel = () => {
         
         // Cleanup function for the carousel
         return () => {
+            // Clean up window event listeners
+            window.removeEventListener('mousemove', drag);
+            window.removeEventListener('touchmove', drag);
+            window.removeEventListener('mouseup', endDrag);
+            window.removeEventListener('touchend', endDrag);
+            window.removeEventListener('touchcancel', endDrag);
+            
+            // Clean up gallery track event listeners
+            if (galleryTrack) {
+                galleryTrack.removeEventListener('mousedown', startDrag);
+                galleryTrack.removeEventListener('touchstart', startDrag);
+                galleryTrack.querySelectorAll('img').forEach(img => {
+                    img.removeEventListener('dragstart', e => e.preventDefault());
+                });
+            }
+            
+            // Clean up animation frame
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+            }
+            
+            // Call existing cleanup functions
             cleanupCarousel?.();
             cleanupModalHandlers?.();
         };
@@ -830,6 +852,13 @@ function initModal() {
         if (!modal) return;
 
         try {
+            // Clean up scroll event listeners
+            if (modal._scrollHandler) {
+                window.removeEventListener('wheel', modal._scrollHandler);
+                window.removeEventListener('touchmove', modal._scrollHandler);
+                delete modal._scrollHandler;
+            }
+
             // Remove show class for animation
             modal.classList.remove('show');
             
@@ -916,10 +945,26 @@ function initModal() {
         modal.removeEventListener('click', closeModal);
         document.removeEventListener('keydown', handleEscape);
         
+        // Cleanup scroll-related event listeners
+        if (modal._scrollHandler) {
+            window.removeEventListener('wheel', modal._scrollHandler);
+            window.removeEventListener('touchmove', modal._scrollHandler);
+            delete modal._scrollHandler;
+        }
+        
+        // Reset any scroll-related styles
+        document.body.style.overflow = '';
+        document.body.style.position = '';
+        document.body.style.width = '';
+        document.body.style.height = '';
+        document.documentElement.style.overflow = '';
+        document.documentElement.style.position = '';
+        
         // Cleanup image click handlers
-        enlargeableImages.forEach(img => {
-            img.removeEventListener('click', openModal);
-            img.removeEventListener('keydown', openModal);
+        const images = document.querySelectorAll('.enlargeable-image');
+        images.forEach(img => {
+            img.removeEventListener('click', handleImageClick);
+            img.removeEventListener('keydown', handleImageClick);
         });
     };
 }
