@@ -839,13 +839,32 @@ function initModal() {
             // Wait for animation to complete before hiding
             setTimeout(() => {
                 modal.style.display = 'none';
+                
+                // Restore body scroll
                 document.body.style.overflow = '';
+                document.body.style.position = '';
+                document.body.style.width = '';
+                document.body.style.height = '';
+                
+                // Remove any inline styles that might be locking scroll
+                document.documentElement.style.overflow = '';
+                document.documentElement.style.position = '';
+                
+                // Force reflow/repaint
+                void document.body.offsetHeight;
                 
                 // Final scroll reset
                 resetModalScroll();
+                
+                // Dispatch custom event to notify other components
+                window.dispatchEvent(new Event('modalClosed'));
             }, 300);
         } catch (error) {
             console.error('Error closing modal:', error);
+            // Ensure we always restore scroll even if there's an error
+            document.body.style.overflow = '';
+            document.body.style.position = '';
+            document.documentElement.style.overflow = '';
         }
     }
     
