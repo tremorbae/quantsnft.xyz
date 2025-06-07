@@ -1,13 +1,3 @@
-// Ensure page scrolls to top on refresh
-window.onbeforeunload = function() {
-    window.scrollTo(0, 0);
-};
-
-// Also scroll to top when the page loads (in case of cached pages)
-window.onload = function() {
-    window.scrollTo(0, 0);
-};
-
 /**
  * DOM Element Cache
  * Lazy loads and caches frequently accessed DOM elements
@@ -320,10 +310,6 @@ const initGalleryCarousel = () => {
                 }, 100);
             };
             
-            // Pause on hover
-            const handleMouseEnter = () => { isPaused = true; };
-            const handleMouseLeave = () => { isPaused = false; };
-            
             // Set initial position
             currentPosition = -itemWidth * itemsPerSet;
             updateCarousel(currentPosition);
@@ -333,23 +319,66 @@ const initGalleryCarousel = () => {
                 animationFrameId = requestAnimationFrame(animateScroll);
             }, 1000);
             
-            // Add event listeners
-            galleryTrack.addEventListener('mouseenter', handleMouseEnter);
-            galleryTrack.addEventListener('mouseleave', handleMouseLeave);
+            // Add event listener for window resize
             window.addEventListener('resize', handleResize);
             
             // Cleanup function
             return () => {
                 cancelAnimationFrame(animationFrameId);
-                galleryTrack.removeEventListener('mouseenter', handleMouseEnter);
-                galleryTrack.removeEventListener('mouseleave', handleMouseLeave);
                 window.removeEventListener('resize', handleResize);
             };
         };
         
-        // Initialize
+        // Initialize carousel with drag support
         createImageElements();
-        const cleanupInfiniteScroll = setupInfiniteScroll();
+        setupInfiniteScroll();
+        
+        // Drag handling state
+        let isDragging = false;
+        let startX = 0;
+        let scrollStart = 0;
+        
+        const startDrag = (e) => {
+            isDragging = true;
+            const touch = e.touches ? e.touches[0] : e;
+            galleryTrack.style.cursor = 'grabbing';
+            galleryTrack.style.transition = 'none';
+            startX = touch.pageX - galleryTrack.offsetLeft;
+            scrollStart = currentPosition;
+            e.preventDefault();
+        };
+        
+        const drag = (e) => {
+            if (!isDragging) return;
+            const touch = e.touches ? e.touches[0] : e;
+            const x = touch.pageX - galleryTrack.offsetLeft;
+            currentPosition = scrollStart + (x - startX) * 2; // Fixed direction with speed multiplier
+            galleryTrack.style.transform = `translateX(${currentPosition}px)`;
+            e.preventDefault();
+        };
+        
+        const endDrag = () => {
+            isDragging = false;
+            galleryTrack.style.cursor = 'grab';
+            galleryTrack.style.transition = 'transform 0.3s ease-out';
+        };
+        
+        // Unified event listeners
+        const events = {
+            start: ['mousedown', 'touchstart'],
+            move: ['mousemove', 'touchmove'],
+            end: ['mouseup', 'touchend']
+        };
+        
+        // Add event listeners
+        events.start.forEach(evt => galleryTrack.addEventListener(evt, startDrag, { passive: false }));
+        events.move.forEach(evt => window.addEventListener(evt, drag, { passive: false }));
+        events.end.forEach(evt => window.addEventListener(evt, endDrag));
+        
+        // Prevent image drag
+        galleryTrack.querySelectorAll('img').forEach(img => {
+            img.addEventListener('dragstart', e => e.preventDefault());
+        });
         
         // Set up click events for the modal
         const setupModalHandlers = () => {
@@ -497,12 +526,19 @@ function updateModalData(nftId) {
                 .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
                 .join(' ');
             
-            const rarityClass = trait.rarity ? trait.rarity.toLowerCase() : 'unknown';
+            // Set the class and display text for the rarity badge
+            let rarityClass = trait.rarity ? trait.rarity.toLowerCase() : 'unknown';
+            let displayText = trait.rarity || 'Unknown';
+            
+            // Special handling for OneOfOne rarity
+            if (trait.rarity === 'OneOfOne') {
+                displayText = '1/1';
+            }
             
             traitElement.innerHTML = `
                 <span class="trait-name">${trait.name}</span>
                 <span class="trait-value">${formattedValue}</span>
-                <span class="trait-rarity ${rarityClass}">${trait.rarity || 'Unknown'}</span>
+                <span class="trait-rarity ${rarityClass}">${displayText}</span>
             `;
             
             traitsContainer.appendChild(traitElement);

@@ -81,7 +81,7 @@ export const nftTraits = {
     5: {
         title: 'Quant #2945',
         traits: [
-            { name: '1/1', value: 'InuYasha', rarity: 'Legendary' }
+            { name: '1/1', value: 'InuYasha', rarity: 'OneOfOne' }
         ]
     },
     6: {

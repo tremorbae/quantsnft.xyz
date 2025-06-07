@@ -513,7 +513,15 @@ a[href*="discord"].mint-button:active {
 .trait-rarity.uncommon { background: #d0ebff; color: #000; } /* Blue */
 .trait-rarity.rare { background: #9775fa; color: #000; } /* Blue Violet */
 .trait-rarity.epic { background: #eebefa; color: #000; } /* Purple */
+/* Legendary style - solid gold, no effects */
 .trait-rarity.legendary { 
+    background: #ffd700; /* Solid gold */
+    color: #000 !important; 
+    border: none !important;
+}
+
+/* One of One style (unique rainbow) */
+.trait-rarity.oneofone { 
     position: relative;
     color: #000 !important; 
     border: none !important;
@@ -521,7 +529,7 @@ a[href*="discord"].mint-button:active {
     z-index: 1;
 }
 
-.trait-rarity.legendary::before {
+.trait-rarity.oneofone::before {
     content: '';
     position: absolute;
     top: 0;
@@ -537,10 +545,10 @@ a[href*="discord"].mint-button:active {
         #d4b3ff,  /* Pastel Purple */
         #ffb3d9   /* Pastel Pink */
     );
-    filter: blur(8px);
+    filter: blur(4px);
     z-index: -1;
     opacity: 0.95;
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 .trait-rarity.mythic { background: #ff1493; color: #000; } /* Hot Pink */
 .trait-rarity.unknown { 
