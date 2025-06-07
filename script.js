@@ -1,3 +1,13 @@
+// Ensure page scrolls to top on refresh
+window.onbeforeunload = function() {
+    window.scrollTo(0, 0);
+};
+
+// Also scroll to top when the page loads (in case of cached pages)
+window.onload = function() {
+    window.scrollTo(0, 0);
+};
+
 /**
  * DOM Element Cache
  * Lazy loads and caches frequently accessed DOM elements
