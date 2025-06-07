@@ -231,9 +231,9 @@ const initGalleryCarousel = () => {
             if (firstItem) {
                 const itemWidth = firstItem.offsetWidth + 24; // Include gap
                 const itemsPerSet = originalItems.length;
-                currentPosition = -itemWidth * itemsPerSet; // Start at the middle set
+                carouselPosition = -itemWidth * itemsPerSet; // Start at the middle set
                 galleryTrack.style.transition = 'none';
-                galleryTrack.style.transform = `translateX(${currentPosition}px)`;
+                galleryTrack.style.transform = `translate3d(${carouselPosition}px, 0, 0)`;
                 
                 // Force a reflow
                 void galleryTrack.offsetWidth;
@@ -258,14 +258,16 @@ const initGalleryCarousel = () => {
             let isResizing = false;
             
             const updateCarousel = (position) => {
-                galleryTrack.style.transform = `translateX(${position}px)`;
+                galleryTrack.style.willChange = 'transform';
+                galleryTrack.style.transform = `translate3d(${position}px, 0, 0)`;
+                carouselPosition = position;
             };
             
             const resetPosition = () => {
                 // Disable transition for the reset to prevent visual glitch
                 galleryTrack.style.transition = 'none';
-                currentPosition = -itemWidth * itemsPerSet;
-                updateCarousel(currentPosition);
+                carouselPosition = -itemWidth * itemsPerSet;
+                updateCarousel(carouselPosition);
                 // Force reflow
                 void galleryTrack.offsetWidth;
                 // Re-enable transition
@@ -283,13 +285,13 @@ const initGalleryCarousel = () => {
                 lastTime = currentTime;
                 
                 // Move the carousel
-                currentPosition -= scrollSpeed * (deltaTime / 16); // Normalize to 60fps
+                carouselPosition -= scrollSpeed * (deltaTime / 16); // Normalize to 60fps
                 
                 // Reset position when we've scrolled one full set
-                if (Math.abs(currentPosition) >= itemWidth * itemsPerSet * 2) {
+                if (Math.abs(carouselPosition) >= itemWidth * itemsPerSet * 2) {
                     resetPosition();
                 } else {
-                    updateCarousel(currentPosition);
+                    updateCarousel(carouselPosition);
                 }
                 
                 animationFrameId = requestAnimationFrame(animateScroll);
@@ -302,17 +304,17 @@ const initGalleryCarousel = () => {
                 clearTimeout(resizeTimeout);
                 resizeTimeout = setTimeout(() => {
                     const newItemWidth = firstItem.offsetWidth + gap;
-                    const positionRatio = currentPosition / (itemWidth * itemsPerSet);
+                    const positionRatio = carouselPosition / (itemWidth * itemsPerSet);
                     itemWidth = newItemWidth;
-                    currentPosition = positionRatio * (itemWidth * itemsPerSet);
-                    updateCarousel(currentPosition);
+                    carouselPosition = positionRatio * (itemWidth * itemsPerSet);
+                    updateCarousel(carouselPosition);
                     isResizing = false;
                 }, 100);
             };
             
             // Set initial position
-            currentPosition = -itemWidth * itemsPerSet;
-            updateCarousel(currentPosition);
+            carouselPosition = -itemWidth * itemsPerSet;
+            updateCarousel(carouselPosition);
             
             // Start the animation after a short delay
             setTimeout(() => {
@@ -413,37 +415,11 @@ const initGalleryCarousel = () => {
             }
         };
         
-        const momentumScroll = (startPos, velocity) => {
-            let pos = startPos;
-            let v = velocity * 15; // Adjust the multiplier for desired momentum strength
-            const startTime = Date.now();
-            
-            const animate = () => {
-                const currentTime = Date.now();
-                const elapsed = currentTime - startTime;
-                
-                // Apply deceleration
-                v *= MOMENTUM_DECAY;
-                pos += v;
-                
-                // Apply the new position
-                applyTransform(pos);
-                
-                // Continue animation if we still have velocity
-                if (Math.abs(v) > MIN_VELOCITY) {
-                    animationId = requestAnimationFrame(animate);
-                } else {
-                    // Snap to nearest item when momentum stops
-                    snapToNearestItem();
-                    animationId = null;
-                }
-            };
-            
-            animationId = requestAnimationFrame(animate);
-        };
-        
         const snapToNearestItem = () => {
-            // Calculate the nearest item position
+            if (!galleryTrack.firstElementChild) return;
+            
+            // Get the gap from computed styles if not already defined
+            const gap = 24; // Default gap in pixels
             const itemWidth = galleryTrack.firstElementChild.offsetWidth + gap;
             const snapPosition = Math.round(carouselPosition / itemWidth) * itemWidth;
             
@@ -456,6 +432,37 @@ const initGalleryCarousel = () => {
                 galleryTrack.style.transition = '';
                 galleryTrack.style.willChange = '';
             }, 300);
+        };
+        
+        const momentumScroll = (startPos, velocity) => {
+            let pos = startPos;
+            let v = velocity * 15; // Adjust the multiplier for desired momentum strength
+            
+            const animate = () => {
+                // Apply deceleration
+                v *= MOMENTUM_DECAY;
+                pos += v;
+                
+                // Apply the new position
+                applyTransform(pos);
+                
+                // Continue animation if we still have velocity
+                if (Math.abs(v) > MIN_VELOCITY) {
+                    dragAnimationId = requestAnimationFrame(animate);
+                } else {
+                    // Snap to nearest item when momentum stops
+                    snapToNearestItem();
+                    dragAnimationId = null;
+                }
+            };
+            
+            // Cancel any existing animation
+            if (dragAnimationId) {
+                cancelAnimationFrame(dragAnimationId);
+            }
+            
+            // Start the animation
+            dragAnimationId = requestAnimationFrame(animate);
         };
         
         const endDrag = (e) => {
