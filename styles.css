@@ -513,7 +513,35 @@ a[href*="discord"].mint-button:active {
 .trait-rarity.uncommon { background: #d0ebff; color: #000; } /* Blue */
 .trait-rarity.rare { background: #9775fa; color: #000; } /* Blue Violet */
 .trait-rarity.epic { background: #eebefa; color: #000; } /* Purple */
-.trait-rarity.legendary { background: #ffd43b; color: #000; } /* Gold */
+.trait-rarity.legendary { 
+    position: relative;
+    color: #000 !important; 
+    border: none !important;
+    overflow: hidden;
+    z-index: 1;
+}
+
+.trait-rarity.legendary::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        #ffb3ba,  /* Pastel Red */
+        #ffdfba,  /* Pastel Orange */
+        #ffffba,  /* Pastel Yellow */
+        #baffc9,  /* Pastel Green */
+        #bae1ff,  /* Pastel Blue */
+        #d4b3ff,  /* Pastel Purple */
+        #ffb3d9   /* Pastel Pink */
+    );
+    filter: blur(8px);
+    z-index: -1;
+    opacity: 0.95;
+    transform: scale(1.1);
+}
 .trait-rarity.mythic { background: #ff1493; color: #000; } /* Hot Pink */
 .trait-rarity.unknown { 
     background: #e9ecef; 
@@ -829,14 +857,14 @@ a[href*="discord"].mint-button:active {
     background: linear-gradient(
         to right,
         rgba(255, 183, 197, 0) 0%,
-        rgba(255, 183, 197, 0.7) 25%,    /* Reduced opacity */
-        rgba(255, 183, 197, 0.6) 50%,    /* Reduced opacity */
-        rgba(255, 183, 197, 0.7) 75%,    /* Reduced opacity */
+        rgba(255, 183, 197, 0.5) 25%,    /* Further reduced opacity */
+        rgba(255, 183, 197, 0.4) 50%,    /* Further reduced opacity */
+        rgba(255, 183, 197, 0.5) 75%,    /* Further reduced opacity */
         rgba(255, 183, 197, 0) 100%
     );
     filter: blur(12px);
     z-index: -1;
-    opacity: 0.6;  /* Reduced overall opacity */
+    opacity: 0.4;  /* Further reduced overall opacity */
     mix-blend-mode: screen;
 }
 
