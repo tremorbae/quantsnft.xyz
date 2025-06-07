@@ -2,34 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>QuantsNFT | 3,000 Quants Minting On Sui</title>
     
     <!-- Primary Meta Tags -->
     <meta name="title" content="QuantsNFT - 3,000 Quants minting on Sui">
-    <meta name="description" content="Discover and mint a QuantsNFTs. Join ou whitelist today. Minting soon!">
-    <meta name="keywords" content="QuantsNFT, NFT collection, digital assets, blockchain, sui, crypto art, minting">
+    <meta name="description" content="Discover and mint exclusive QuantsNFTs. Join our whitelist today. Minting soon on the Sui blockchain.">
+    <meta name="keywords" content="QuantsNFT, NFT collection, digital assets, blockchain, sui, crypto art, minting, sui blockchain">
     <meta name="author" content="QuantsNFT">
     <meta name="robots" content="index, follow">
     
-    <!-- Twitter Card data -->
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://quantsnft.xyz/">
+    <meta property="og:title" content="QuantsNFT - 3,000 Quants minting on Sui">
+    <meta property="og:description" content="Discover and mint exclusive QuantsNFTs. Join our whitelist today. Minting soon on the Sui blockchain.">
+    <meta property="og:image" content="https://quantsnft.xyz/assets/images/QuantsCard.png">
+    
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@QuantsNFTxyz">
     <meta name="twitter:creator" content="@QuantsNFTxyz">
     <meta name="twitter:title" content="QuantsNFT - 3,000 Quants minting on Sui">
-    <meta name="twitter:description" content="Discover and mint a QuantsNFTs. Join our whitelist today. Minting soon!">
+    <meta name="twitter:description" content="Discover and mint exclusive QuantsNFTs. Join our whitelist today. Minting soon on the Sui blockchain.">
     <meta name="twitter:image" content="https://quantsnft.xyz/assets/images/QuantsCard.png">
     <meta name="twitter:image:alt" content="QuantsNFT Collection">
-    <meta name="twitter:domain" content="quantsnft.xyz">
-    <meta name="twitter:url" content="https://quantsnft.xyz">
     
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="favicon.ico">
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
-    <link rel="apple-touch-icon" href="apple-touch-icon.png">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://quantsnft.xyz/" />
+    <link rel="canonical" href="https://quantsnft.xyz/">
     
     <!-- Structured Data / JSON-LD -->
     <script type="application/ld+json">
@@ -57,7 +58,7 @@
     <section class="hero">
         <div class="video-overlay">
             <video id="heroVideo" muted loop playsinline webkit-playsinline x5-playsinline preload="auto">
-                <source src="assets/videos/CherryBlossomOverlayHeroBanner.mp4" type="video/mp4">
+                <source src="assets/videos/hero-video.webm" type="video/webm">
                 Your browser does not support the video tag.
             </video>
         </div>
@@ -71,42 +72,69 @@
     <!-- About Section -->
     <section id="about" class="about">
         <div class="container">
+            <h2 class="section-title desktop-title">Mint Details</h2>
             <h2 class="mobile-title">Mint Details</h2>
             <div class="about-content">
                 <div class="about-text">
-                    <h2 class="desktop-title">Mint Details</h2>
-                    <p>Minting on <a href="https://www.tradeport.xyz/" target="_blank" rel="noopener noreferrer" style="color: inherit; text-decoration: none; font-weight: bold;">Tradeport.xyz</a></p>
+                    <p>Minting on <a href="https://www.tradeport.xyz/" target="_blank" rel="noopener noreferrer">Tradeport.xyz</a></p>
                     <p>Blockchain: Sui<br>
-                    Supply: 3,000 Quants</p>
+                    Supply: 3,000 Quants<br>
+                    Mint Date: TBA</p>
                     <p>Phases:<br>
-                    <strong>•</strong> Early Whitelist: 3 mints 1 Sui each<br>
-                    <strong>•</strong> Regular WL: 5 mints 2 Sui each<br>
-                    <strong>•</strong> Public: 20 mints 3 Sui each</p>
-                    <a href="https://forms.gle/5vaxRRX1t45GVVa1A" target="_blank" rel="noopener noreferrer" class="mint-button">EARLY WHITELIST</a>
+                    <strong>•</strong> Treasury: 250-300 mints, free mint<br>
+                    <strong>•</strong> Contributors: 2 mints, free mint<br>
+                    <strong>•</strong> Early Bird WL: 3 mints, 1 Sui each<br>
+                    <strong>•</strong> Regular WL: 5 mints, 2 Sui each<br>
+                    <strong>•</strong> Public: 20 mints, 3 Sui each</p>
+                    <div class="button-group">
+                        <a href="https://jobs.mchire.com/" target="_blank" rel="noopener noreferrer" class="mint-button">EARLYBIRD WL</a>
+                        <a href="https://discord.com/invite/kNyts7rZqH" target="_blank" rel="noopener noreferrer" class="mint-button">JOIN DISCORD</a>
+                    </div>
+                    <p class="discord-text">Earlybird WL has ended, join our Discord to claim your whitelist spot.</p>
                 </div>
                 <div class="about-image">
-                    <img src="assets/images/QuantsAboutPFP.png" alt="Quants NFT Example">
+                    <div class="image-container">
+                        <img src="assets/images/QuantsAboutPFP.png" alt="Quants NFT Example" class="enlargeable-image" data-nft-id="0" tabindex="0" role="button" aria-label="View profile picture in detail">
+                        <div class="expand-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="24" height="24">
+                                <path fill="currentColor" d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Image Modal -->
+                <div id="imageModal" class="modal">
+                    <div class="modal-container">
+                        <span class="close-modal" aria-label="Close modal">&times;</span>
+                        <div class="modal-content">
+                            <div class="modal-image">
+                                <div class="image-title">QuantsNFT</div>
+                                <img id="enlargedImage" src="" alt="Enlarged NFT view" class="enlarged-nft-image">
+                            </div>
+                            <div class="modal-details">
+                                
+                                <div class="nft-traits">
+                                    <h3>Traits</h3>
+                                    <div class="traits-grid" id="nftTraits">
+                                        <!-- Traits will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Gallery Section -->
-    <section id="gallery" class="gallery">
+    <!-- Gallery Carousel Section -->
+    <section class="gallery-section">
         <div class="container">
-            <h2>Gallery</h2>
-            <div class="gallery-grid">
-                <div class="gallery-item">
-                    <img src="assets/images/QuantsGallery1.png" alt="Quants NFT 1">
-                </div>
-                <div class="gallery-item">
-                    <img src="assets/images/QuantsGallery2.png" alt="Quants NFT 2">
-                </div>
-                <div class="gallery-item">
-                    <img src="assets/images/QuantsGallery3.png" alt="Quants NFT 3">
-                </div>
-                <div class="gallery-item">
-                    <img src="assets/images/QuantsGallery4.png" alt="Quants NFT 4">
+            <h2 class="section-title">Gallery</h2>
+            <div class="gallery-carousel">
+                <div class="gallery-track">
+                    <!-- Images will be duplicated by JavaScript for infinite effect -->
                 </div>
             </div>
         </div>
@@ -139,16 +167,11 @@
         </div>
     </footer>
 
-    <!-- Lightbox -->
-    <div id="lightbox" class="lightbox">
-        <span class="close">&times;</span>
-        <img class="lightbox-content" id="lightbox-img">
-    </div>
 
     <!-- Audio Player -->
     <div class="music-player">
         <audio id="bgMusic">
-            <source src="assets/audio/QuantsNFT-Aze No Shirase.mp3" type="audio/mpeg">
+            <source src="assets/audio/Strangers - Yoko Kanno.mp3" type="audio/mpeg">
             Your browser does not support the audio element.
         </audio>
         <button id="musicToggle" class="music-toggle" aria-label="Toggle music">
@@ -156,6 +179,7 @@
         </button>
     </div>
 
-    <script src="scripts.js"></script>
+    <script src="nftData.js" type="module"></script>
+    <script src="script.js" type="module"></script>
 </body>
 </html>
