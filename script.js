@@ -180,8 +180,8 @@ const initGalleryCarousel = () => {
         // Store the original items and track current position
         const originalItems = [...galleryItems];
         // Start the carousel at 1/3 of the way through the first set of items
-        let currentPosition = -(galleryTrack.offsetWidth / 3);
-        let animationId = null;
+        let carouselPosition = -(galleryTrack.offsetWidth / 3);
+        let carouselAnimationId = null;
         let isPaused = false;
         const scrollSpeed = 0.5; // Pixels per frame
         
@@ -333,47 +333,185 @@ const initGalleryCarousel = () => {
         createImageElements();
         setupInfiniteScroll();
         
-        // Drag handling state
+        // Drag handling state with improved smoothness
         let isDragging = false;
         let startX = 0;
         let scrollStart = 0;
+        let touchStartTime = 0;
+        let touchStartX = 0;
+        let velocity = 0;
+        let lastX = 0;
+        let lastTime = 0;
+        let dragAnimationId = null;
+        const TAP_THRESHOLD = 5; // pixels
+        const TAP_TIME_THRESHOLD = 200; // milliseconds
+        const MOMENTUM_DECAY = 0.95; // How quickly the momentum slows down
+        const MIN_VELOCITY = 0.1; // Minimum velocity before stopping
+        
+        const applyTransform = (position) => {
+            // Use will-change for better performance
+            galleryTrack.style.willChange = 'transform';
+            // Use transform3d for hardware acceleration
+            galleryTrack.style.transform = `translate3d(${position}px, 0, 0)`;
+            carouselPosition = position;
+        };
         
         const startDrag = (e) => {
-            isDragging = true;
             const touch = e.touches ? e.touches[0] : e;
-            galleryTrack.style.cursor = 'grabbing';
-            galleryTrack.style.transition = 'none';
-            startX = touch.pageX - galleryTrack.offsetLeft;
-            scrollStart = currentPosition;
-            e.preventDefault();
+            touchStartX = touch.pageX;
+            touchStartTime = Date.now();
+            lastX = touch.pageX;
+            lastTime = touchStartTime;
+            velocity = 0;
+            
+            // Cancel any ongoing animations
+            if (dragAnimationId) {
+                cancelAnimationFrame(dragAnimationId);
+                dragAnimationId = null;
+            }
+            
+            // Only start dragging if not a tap
+            if (!isDragging) {
+                isDragging = true;
+                galleryTrack.style.cursor = 'grabbing';
+                galleryTrack.style.transition = 'none';
+                startX = touch.pageX - galleryTrack.offsetLeft;
+                scrollStart = carouselPosition;
+            }
+            
+            // Only prevent default for touchmove events to allow scrolling
+            if (e.cancelable && e.type === 'touchstart') {
+                e.preventDefault();
+            }
         };
         
         const drag = (e) => {
             if (!isDragging) return;
+            
             const touch = e.touches ? e.touches[0] : e;
-            const x = touch.pageX - galleryTrack.offsetLeft;
-            currentPosition = scrollStart + (x - startX) * 2; // Fixed direction with speed multiplier
-            galleryTrack.style.transform = `translateX(${currentPosition}px)`;
-            e.preventDefault();
+            const currentX = touch.pageX;
+            const currentTime = Date.now();
+            
+            // Calculate velocity for momentum scrolling
+            if (lastTime && lastTime !== currentTime) {
+                const deltaX = currentX - lastX;
+                const deltaTime = currentTime - lastTime;
+                velocity = deltaX / deltaTime * 1.5; // Slightly increase the effect
+            }
+            
+            lastX = currentX;
+            lastTime = currentTime;
+            
+            const x = currentX - galleryTrack.offsetLeft;
+            const newPosition = scrollStart + (x - startX) * 1.8; // Slightly reduce the multiplier for better control
+            
+            applyTransform(newPosition);
+            
+            // Only prevent default for touchmove when actually dragging
+            if (e.cancelable && e.type === 'touchmove' && isDragging) {
+                e.preventDefault();
+            }
         };
         
-        const endDrag = () => {
+        const momentumScroll = (startPos, velocity) => {
+            let pos = startPos;
+            let v = velocity * 15; // Adjust the multiplier for desired momentum strength
+            const startTime = Date.now();
+            
+            const animate = () => {
+                const currentTime = Date.now();
+                const elapsed = currentTime - startTime;
+                
+                // Apply deceleration
+                v *= MOMENTUM_DECAY;
+                pos += v;
+                
+                // Apply the new position
+                applyTransform(pos);
+                
+                // Continue animation if we still have velocity
+                if (Math.abs(v) > MIN_VELOCITY) {
+                    animationId = requestAnimationFrame(animate);
+                } else {
+                    // Snap to nearest item when momentum stops
+                    snapToNearestItem();
+                    animationId = null;
+                }
+            };
+            
+            animationId = requestAnimationFrame(animate);
+        };
+        
+        const snapToNearestItem = () => {
+            // Calculate the nearest item position
+            const itemWidth = galleryTrack.firstElementChild.offsetWidth + gap;
+            const snapPosition = Math.round(carouselPosition / itemWidth) * itemWidth;
+            
+            // Smoothly animate to the nearest item
+            galleryTrack.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.1)';
+            applyTransform(snapPosition);
+            
+            // Reset transition after animation completes
+            setTimeout(() => {
+                galleryTrack.style.transition = '';
+                galleryTrack.style.willChange = '';
+            }, 300);
+        };
+        
+        const endDrag = (e) => {
+            if (!isDragging) return;
+            
+            const touch = e.changedTouches ? e.changedTouches[0] : e;
+            const touchEndX = touch.pageX;
+            const touchEndTime = Date.now();
+            const touchDuration = touchEndTime - touchStartTime;
+            const touchDistance = Math.abs(touchEndX - touchStartX);
+            
+            // Determine if this was a tap (short time and small distance)
+            const isTap = touchDuration < TAP_TIME_THRESHOLD && touchDistance < TAP_THRESHOLD;
+            
+            // Reset dragging state
             isDragging = false;
             galleryTrack.style.cursor = 'grab';
-            galleryTrack.style.transition = 'transform 0.3s ease-out';
+            
+            // Apply momentum if it was a swipe
+            if (!isTap && Math.abs(velocity) > 0.5) {
+                momentumScroll(carouselPosition, velocity);
+            } else {
+                snapToNearestItem();
+            }
+            
+            // If it was a tap, find and trigger a click on the element
+            if (isTap && e.type === 'touchend') {
+                const target = document.elementFromPoint(touch.clientX, touch.clientY);
+                if (target) {
+                    const clickable = target.closest('.gallery-item, .expand-icon');
+                    if (clickable) {
+                        clickable.click();
+                    }
+                }
+            }
         };
         
-        // Unified event listeners
+        // Unified event listeners with better touch handling
         const events = {
             start: ['mousedown', 'touchstart'],
             move: ['mousemove', 'touchmove'],
             end: ['mouseup', 'touchend']
         };
         
-        // Add event listeners
-        events.start.forEach(evt => galleryTrack.addEventListener(evt, startDrag, { passive: false }));
-        events.move.forEach(evt => window.addEventListener(evt, drag, { passive: false }));
-        events.end.forEach(evt => window.addEventListener(evt, endDrag));
+        // Add event listeners with passive: true for better performance
+        events.start.forEach(evt => {
+            galleryTrack.addEventListener(evt, startDrag, { passive: evt === 'touchstart' });
+        });
+        
+        events.move.forEach(evt => {
+            window.addEventListener(evt, drag, { passive: evt === 'touchmove' });
+        });
+        
+        events.end.forEach(evt => {
+            window.addEventListener(evt, endDrag, { passive: true });
+        });
         
         // Prevent image drag
         galleryTrack.querySelectorAll('img').forEach(img => {
