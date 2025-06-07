@@ -525,11 +525,29 @@ const initGalleryCarousel = () => {
             img.addEventListener('dragstart', e => e.preventDefault());
         });
         
-        // Function to prevent scroll on modal content
-        const preventScroll = (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
+        // Function to handle scroll events on modal
+        const handleModalScroll = (e) => {
+            const modal = document.querySelector('.modal.show');
+            if (!modal) return;
+            
+            const modalContent = modal.querySelector('.modal-container');
+            const isTouchEvent = e.type.includes('touch');
+            const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
+            
+            // Allow scrolling within the modal content
+            if (isScrollable) {
+                const isAtTop = modalContent.scrollTop === 0 && e.deltaY < 0;
+                const isAtBottom = modalContent.scrollTop + modalContent.clientHeight >= modalContent.scrollHeight - 1 && e.deltaY > 0;
+                
+                if (isAtTop || isAtBottom) {
+                    e.preventDefault();
+                }
+            }
+            
+            // Prevent default for touch events outside modal content
+            if (isTouchEvent && !modalContent.contains(e.target)) {
+                e.preventDefault();
+            }
         };
         
         // Function to close the carousel modal
@@ -550,9 +568,12 @@ const initGalleryCarousel = () => {
                     delete modal._closeHandler;
                 }
                 
-                // Remove scroll prevention
-                modal.removeEventListener('wheel', preventScroll);
-                modal.removeEventListener('touchmove', preventScroll);
+                // Remove scroll handlers
+                if (modal._scrollHandler) {
+                    window.removeEventListener('wheel', modal._scrollHandler);
+                    window.removeEventListener('touchmove', modal._scrollHandler);
+                    delete modal._scrollHandler;
+                }
             }, 300);
         };
         
@@ -578,9 +599,11 @@ const initGalleryCarousel = () => {
                         modal.classList.add('show');
                         // Update NFT data after modal is shown
                         updateModalData(nftId);
-                        // Prevent scroll on modal content
-                        modal.addEventListener('wheel', preventScroll, { passive: false });
-                        modal.addEventListener('touchmove', preventScroll, { passive: false });
+                        // Handle scroll events on the modal
+                        const scrollHandler = handleModalScroll;
+                        window.addEventListener('wheel', scrollHandler, { passive: false });
+                        window.addEventListener('touchmove', scrollHandler, { passive: false });
+                        modal._scrollHandler = scrollHandler;
                     }, 10);
                     
                     // Close modal when clicking outside the image
@@ -1114,14 +1137,27 @@ const initAppSafely = () => {
     }
 };
 
+// Function to update viewport height variable for mobile browsers
+function updateViewportHeight() {
+    // First we get the viewport height and we multiply it by 1% to get a value for a vh unit
+    const vh = window.innerHeight * 0.01;
+    // Then we set the value in the --vh custom property to the root of the document
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Update viewport height on load and resize
+updateViewportHeight();
+window.addEventListener('resize', updateViewportHeight);
+window.addEventListener('orientationchange', updateViewportHeight);
+
 // Start the application when the DOM is fully loaded
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initAppSafely);
 } else {
-    setTimeout(initAppSafely, 0);
+    initAppSafely();
 }
 
 // Add error event listener for unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
+window.addEventListener('unhandledrejection', function(event) {
     console.error('Unhandled promise rejection:', event.reason);
 });
