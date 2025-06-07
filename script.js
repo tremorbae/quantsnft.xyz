@@ -525,6 +525,37 @@ const initGalleryCarousel = () => {
             img.addEventListener('dragstart', e => e.preventDefault());
         });
         
+        // Function to prevent scroll on modal content
+        const preventScroll = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            return false;
+        };
+        
+        // Function to close the carousel modal
+        const closeCarouselModal = (modal) => {
+            if (!modal) return;
+            
+            // Remove show class for animation
+            modal.classList.remove('show');
+            
+            // Wait for animation to complete before hiding
+            setTimeout(() => {
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                
+                // Clean up event listeners
+                if (modal._closeHandler) {
+                    modal.removeEventListener('click', modal._closeHandler);
+                    delete modal._closeHandler;
+                }
+                
+                // Remove scroll prevention
+                modal.removeEventListener('wheel', preventScroll);
+                modal.removeEventListener('touchmove', preventScroll);
+            }, 300);
+        };
+        
         // Set up click events for the modal
         const setupModalHandlers = () => {
             // Handle clicks on gallery images and expand icons
@@ -538,14 +569,30 @@ const initGalleryCarousel = () => {
                     modalImg.src = img.src || '';
                     modalImg.alt = img.alt || 'NFT Preview';
 
-                    // Show the modal
+                    // Show the modal and prevent background scrolling
                     modal.style.display = 'flex';
+                    document.body.style.overflow = 'hidden';
+                    
                     // Small delay to allow display change before adding the show class
                     setTimeout(() => {
                         modal.classList.add('show');
+                        // Update NFT data after modal is shown
+                        updateModalData(nftId);
+                        // Prevent scroll on modal content
+                        modal.addEventListener('wheel', preventScroll, { passive: false });
+                        modal.addEventListener('touchmove', preventScroll, { passive: false });
                     }, 10);
-
-                    updateModalData(nftId);
+                    
+                    // Close modal when clicking outside the image
+                    const closeOnOutsideClick = (e) => {
+                        if (e.target === modal) {
+                            closeCarouselModal(modal);
+                        }
+                    };
+                    modal.addEventListener('click', closeOnOutsideClick);
+                    
+                    // Store the close handler for cleanup
+                    modal._closeHandler = closeOnOutsideClick;
                 }
             };
             
