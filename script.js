@@ -381,7 +381,7 @@ const initGalleryCarousel = () => {
                 scrollStart = carouselPosition;
             }
             
-            // Only prevent default for touchmove events to allow scrolling
+            // Prevent default for touchstart to improve drag behavior
             if (e.cancelable && e.type === 'touchstart') {
                 e.preventDefault();
             }
@@ -415,25 +415,6 @@ const initGalleryCarousel = () => {
             }
         };
         
-        const snapToNearestItem = () => {
-            if (!galleryTrack.firstElementChild) return;
-            
-            // Get the gap from computed styles if not already defined
-            const gap = 24; // Default gap in pixels
-            const itemWidth = galleryTrack.firstElementChild.offsetWidth + gap;
-            const snapPosition = Math.round(carouselPosition / itemWidth) * itemWidth;
-            
-            // Smoothly animate to the nearest item
-            galleryTrack.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.1)';
-            applyTransform(snapPosition);
-            
-            // Reset transition after animation completes
-            setTimeout(() => {
-                galleryTrack.style.transition = '';
-                galleryTrack.style.willChange = '';
-            }, 300);
-        };
-        
         const momentumScroll = (startPos, velocity) => {
             let pos = startPos;
             let v = velocity * 15; // Adjust the multiplier for desired momentum strength
@@ -450,8 +431,7 @@ const initGalleryCarousel = () => {
                 if (Math.abs(v) > MIN_VELOCITY) {
                     dragAnimationId = requestAnimationFrame(animate);
                 } else {
-                    // Snap to nearest item when momentum stops
-                    snapToNearestItem();
+                    // Just stop the animation when momentum is gone
                     dragAnimationId = null;
                 }
             };
@@ -481,22 +461,30 @@ const initGalleryCarousel = () => {
             isDragging = false;
             galleryTrack.style.cursor = 'grab';
             
-            // Apply momentum if it was a swipe
+            // Apply momentum if it was a swipe, otherwise just stop where it is
             if (!isTap && Math.abs(velocity) > 0.5) {
                 momentumScroll(carouselPosition, velocity);
-            } else {
-                snapToNearestItem();
             }
             
             // If it was a tap, find and trigger a click on the element
-            if (isTap && e.type === 'touchend') {
-                const target = document.elementFromPoint(touch.clientX, touch.clientY);
-                if (target) {
-                    const clickable = target.closest('.gallery-item, .expand-icon');
-                    if (clickable) {
-                        clickable.click();
+            if (isTap && e.type.includes('touch')) {
+                // Small delay to ensure the click isn't blocked by the touchend event
+                setTimeout(() => {
+                    const touchPoint = e.changedTouches ? e.changedTouches[0] : e;
+                    const target = document.elementFromPoint(touchPoint.clientX, touchPoint.clientY);
+                    if (target) {
+                        const clickable = target.closest('.gallery-item, .expand-icon, .gallery-item img');
+                        if (clickable) {
+                            // Use a proper click event instead of .click() for better compatibility
+                            const clickEvent = new MouseEvent('click', {
+                                view: window,
+                                bubbles: true,
+                                cancelable: true
+                            });
+                            clickable.dispatchEvent(clickEvent);
+                        }
                     }
-                }
+                }, 10);
             }
         };
         
@@ -504,143 +492,111 @@ const initGalleryCarousel = () => {
         const events = {
             start: ['mousedown', 'touchstart'],
             move: ['mousemove', 'touchmove'],
-            end: ['mouseup', 'touchend']
+            end: ['mouseup', 'touchend', 'touchcancel']
         };
         
-        // Add event listeners with passive: true for better performance
-        events.start.forEach(evt => {
-            galleryTrack.addEventListener(evt, startDrag, { passive: evt === 'touchstart' });
-        });
+        // Add event listeners with proper passive handling
+        galleryTrack.addEventListener('mousedown', startDrag);
+        galleryTrack.addEventListener('touchstart', startDrag, { passive: false });
         
-        events.move.forEach(evt => {
-            window.addEventListener(evt, drag, { passive: evt === 'touchmove' });
-        });
+        // Add move/end listeners to window for better drag handling
+        window.addEventListener('mousemove', drag);
+        window.addEventListener('touchmove', drag, { passive: false });
         
-        events.end.forEach(evt => {
-            window.addEventListener(evt, endDrag, { passive: true });
-        });
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+        window.addEventListener('touchcancel', endDrag);
         
         // Prevent image drag
         galleryTrack.querySelectorAll('img').forEach(img => {
             img.addEventListener('dragstart', e => e.preventDefault());
         });
         
-        // Function to handle scroll events on modal
-        const handleModalScroll = (e) => {
-            const modal = document.querySelector('.modal.show');
-            if (!modal) return;
-            
-            const modalContent = modal.querySelector('.modal-container');
-            const isTouchEvent = e.type.includes('touch');
-            const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
-            
-            // Allow scrolling within the modal content
-            if (isScrollable) {
-                const isAtTop = modalContent.scrollTop === 0 && e.deltaY < 0;
-                const isAtBottom = modalContent.scrollTop + modalContent.clientHeight >= modalContent.scrollHeight - 1 && e.deltaY > 0;
-                
-                if (isAtTop || isAtBottom) {
-                    e.preventDefault();
-                }
-            }
-            
-            // Prevent default for touch events outside modal content
-            if (isTouchEvent && !modalContent.contains(e.target)) {
-                e.preventDefault();
-            }
-        };
-        
-        // Function to close the carousel modal
-        const closeCarouselModal = (modal) => {
-            if (!modal) return;
-            
-            // Remove show class for animation
-            modal.classList.remove('show');
-            
-            // Wait for animation to complete before hiding
-            setTimeout(() => {
-                modal.style.display = 'none';
-                document.body.style.overflow = '';
-                
-                // Clean up event listeners
-                if (modal._closeHandler) {
-                    modal.removeEventListener('click', modal._closeHandler);
-                    delete modal._closeHandler;
-                }
-                
-                // Remove scroll handlers
-                if (modal._scrollHandler) {
-                    window.removeEventListener('wheel', modal._scrollHandler);
-                    window.removeEventListener('touchmove', modal._scrollHandler);
-                    delete modal._scrollHandler;
-                }
-            }, 300);
-        };
-        
         // Set up click events for the modal
         const setupModalHandlers = () => {
             // Handle clicks on gallery images and expand icons
             const handleImageClick = (img, nftId) => {
-                // Find the modal and image elements
+                if (!img) return;
+                
+                // Use the main modal's open function
                 const modal = document.getElementById('imageModal');
                 const modalImg = document.getElementById('enlargedImage');
-
+                
                 if (modal && modalImg) {
-                    // Set the image source and alt text
-                    modalImg.src = img.src || '';
-                    modalImg.alt = img.alt || 'NFT Preview';
-
-                    // Show the modal and prevent background scrolling
-                    modal.style.display = 'flex';
-                    document.body.style.overflow = 'hidden';
+                    // Use the main modal's open function
+                    window.openModal(img, nftId);
                     
-                    // Small delay to allow display change before adding the show class
-                    setTimeout(() => {
-                        modal.classList.add('show');
-                        // Update NFT data after modal is shown
-                        updateModalData(nftId);
-                        // Handle scroll events on the modal
-                        const scrollHandler = handleModalScroll;
-                        window.addEventListener('wheel', scrollHandler, { passive: false });
-                        window.addEventListener('touchmove', scrollHandler, { passive: false });
-                        modal._scrollHandler = scrollHandler;
-                    }, 10);
+                    // Handle scroll events on the modal
+                    const scrollHandler = (e) => {
+                        if (!modal) return;
+                        
+                        const modalContent = modal.querySelector('.modal-container');
+                        if (!modalContent) return;
+                        
+                        const isTouchEvent = e.type.includes('touch');
+                        const isScrollable = modalContent.scrollHeight > modalContent.clientHeight;
+                        
+                        // Allow scrolling within the modal content
+                        if (isScrollable) {
+                            const isAtTop = modalContent.scrollTop === 0 && e.deltaY < 0;
+                            const isAtBottom = Math.ceil(modalContent.scrollTop + modalContent.clientHeight) >= modalContent.scrollHeight - 1 && e.deltaY > 0;
+                            
+                            if (isAtTop || isAtBottom) {
+                                e.preventDefault();
+                            }
+                        }
+                        
+                        // Prevent default for touch events outside modal content
+                        if (isTouchEvent && !modalContent.contains(e.target)) {
+                            e.preventDefault();
+                        }
+                    };
+                    
+                    window.addEventListener('wheel', scrollHandler, { passive: false });
+                    window.addEventListener('touchmove', scrollHandler, { passive: false });
+                    modal._scrollHandler = scrollHandler;
                     
                     // Close modal when clicking outside the image
                     const closeOnOutsideClick = (e) => {
                         if (e.target === modal) {
-                            closeCarouselModal(modal);
+                            window.closeModal();
                         }
                     };
                     modal.addEventListener('click', closeOnOutsideClick);
-                    
-                    // Store the close handler for cleanup
                     modal._closeHandler = closeOnOutsideClick;
                 }
             };
             
-            // Handle clicks on the about image expand icon
+            // Handle about section expand icon
             const aboutExpandIcon = document.querySelector('.about-image .expand-icon');
             if (aboutExpandIcon) {
-                aboutExpandIcon.addEventListener('click', (e) => {
-                    e.stopPropagation(); // Prevent event bubbling to the parent container
-                    const img = aboutExpandIcon.closest('.image-container').querySelector('img');
-                    if (img) {
-                        handleImageClick(img, 0); // Use 0 as the ID for the about image
-                    }
-                });
+                const aboutImage = aboutExpandIcon.closest('.image-container')?.querySelector('img');
+                if (aboutImage) {
+                    aboutExpandIcon.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleImageClick(aboutImage, 0); // Use 0 as the ID for the about image
+                    });
+                }
             }
 
-            // Handle clicks on gallery images and expand icons
+            // Handle clicks on gallery items
             const galleryItems = document.querySelectorAll('.gallery-item');
             galleryItems.forEach(item => {
                 const img = item.querySelector('img');
                 const expandIcon = item.querySelector('.expand-icon');
+                if (!img) return;
+                
                 const nftId = parseInt(img.getAttribute('data-nft-id') || '0', 10);
-
+                
+                // Create a single handler function for this item
+                const handleItemClick = (e) => {
+                    e.stopPropagation();
+                    handleImageClick(img, nftId);
+                };
+                
                 // Handle click on the image directly
                 if (img) {
-                    img.addEventListener('click', () => handleImageClick(img, nftId));
+                    img.addEventListener('click', handleItemClick);
                     
                     // Make image keyboard accessible
                     img.setAttribute('role', 'button');
@@ -648,43 +604,56 @@ const initGalleryCarousel = () => {
                     img.addEventListener('keydown', (e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
-                            handleImageClick(img, nftId);
+                            handleItemClick(e);
                         }
                     });
                 }
-
+                
                 // Handle click on the expand icon
                 if (expandIcon) {
-                    expandIcon.addEventListener('click', (e) => {
-                        e.stopPropagation(); // Prevent event bubbling to the parent
-                        handleImageClick(img, nftId);
-                    });
+                    expandIcon.addEventListener('click', handleItemClick);
+                    
+                    // Store references for cleanup
+                    item._clickHandler = handleItemClick;
                 }
             });
-
+            
             // Return cleanup function
-            return () => {
-                // Cleanup event listeners
+            const cleanup = () => {
+                // Cleanup event listeners for gallery items
                 galleryItems.forEach(item => {
                     const img = item.querySelector('img');
                     const expandIcon = item.querySelector('.expand-icon');
 
-                    if (img) {
-                        img.removeEventListener('click', handleImageClick);
-                        img.removeEventListener('keydown', handleImageClick);
+                    // Clean up image click handlers
+                    if (img && item._clickHandler) {
+                        img.removeEventListener('click', item._clickHandler);
+                        img.removeEventListener('keydown', item._clickHandler);
+                        delete item._clickHandler;
                     }
 
-                    if (expandIcon) {
-                        expandIcon.removeEventListener('click', handleImageClick);
+                    // Clean up expand icon click handler
+                    if (expandIcon && item._clickHandler) {
+                        expandIcon.removeEventListener('click', item._clickHandler);
+                        delete item._clickHandler;
                     }
                 });
+                
+                // Clean up about section expand icon
+                const aboutExpandIcon = document.querySelector('.about-image .expand-icon');
+                if (aboutExpandIcon && aboutExpandIcon._clickHandler) {
+                    aboutExpandIcon.removeEventListener('click', aboutExpandIcon._clickHandler);
+                    delete aboutExpandIcon._clickHandler;
+                }
             };
+            
+            return cleanup;
         };
-
+        
         // Initialize modal handlers
         const cleanupModalHandlers = setupModalHandlers();
         
-        // Cleanup function
+        // Cleanup function for the carousel
         return () => {
             cleanupCarousel?.();
             cleanupModalHandlers?.();
@@ -789,15 +758,7 @@ function initModal() {
         openModal(imgElement, nftId);
     }
 
-    // Function to reset modal scroll
-    function resetModalScroll() {
-        const modalContent = modal?.querySelector('.modal-details');
-        if (modalContent) {
-            modalContent.scrollTop = 0;
-        }
-    }
-
-    // Function to reset modal scroll
+    // Function to reset modal scroll positions
     function resetModalScroll() {
         if (!modal) return;
         
@@ -818,8 +779,8 @@ function initModal() {
         });
     }
 
-    // Function to open modal
-    function openModal(imgElement, nftId = 0) {
+    // Make openModal available globally for carousel to use
+    window.openModal = function(imgElement, nftId = 0) {
         if (!modal || !modalImg) return;
 
         try {
@@ -855,8 +816,8 @@ function initModal() {
         }
     }
 
-    // Function to close modal
-    function closeModal() {
+    // Make closeModal available globally for carousel to use
+    window.closeModal = function() {
         if (!modal) return;
 
         try {
