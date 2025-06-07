@@ -627,8 +627,10 @@ a[href*="discord"].mint-button:active {
 .modal.show {
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
     opacity: 1;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-container {
@@ -766,15 +768,25 @@ a[href*="discord"].mint-button:active {
     }
     
     @media (max-height: 800px) {
+        .modal.show {
+            align-items: flex-start;
+            padding-top: 40px;
+            padding-bottom: 40px;
+        }
         .modal-container {
-            max-height: 90vh;
+            max-height: calc(100% - 80px);
+            margin: 0 auto;
         }
     }
     
     @media (max-width: 500px) {
+        .modal.show {
+            padding: 10px;
+            align-items: center;
+        }
         .modal-container {
-            max-height: 70vh;
-            margin: 1.5vh auto;
+            max-height: 90vh;
+            margin: 0 auto;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
