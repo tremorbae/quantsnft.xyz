@@ -986,8 +986,10 @@ const initMusicPlayer = () => {
     
     // Set initial state
     audio.volume = 0.5;
-    audio.loop = false;  // Disable auto-looping
+    audio.loop = true;  // Enable looping for continuous playback
     audio.preload = 'auto';
+    audio.load(); // Force load the audio file
+    console.log('Audio element initialized:', audio);
     let audioContextInitialized = false;
     
     // Add error handling
@@ -998,10 +1000,18 @@ const initMusicPlayer = () => {
                 code: audio.error.code,
                 message: audio.error.message
             });
+        } else {
+            console.error('Audio source:', audio.currentSrc);
+            console.error('Network state:', audio.networkState);
+            console.error('Ready state:', audio.readyState);
         }
         // Reset button state on error
         toggle.classList.remove('playing');
         isPlaying = false;
+        
+        // Show error to user
+        toggle.title = 'Error loading audio. Click to retry.';
+        toggle.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
     };
     
     // Handle song end
