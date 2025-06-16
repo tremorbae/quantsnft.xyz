@@ -84,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             
             if (matchingLists.length > 0) {
                 showResult(
-                    'Your wallet is whitelisted!',
+                    'Your wallet is whitelisted in the following lists:',
                     'success',
                     matchingLists
                 );
