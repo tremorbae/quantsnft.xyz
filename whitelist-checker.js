@@ -83,11 +83,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
             
             if (matchingLists.length > 0) {
-                const listsText = matchingLists.join(', ');
                 showResult(
-                    matchingLists.length > 1 
-                        ? `Your wallet is whitelisted in the following lists: ${listsText}`
-                        : `Your wallet is whitelisted in the ${listsText} list!`,
+                    'Your wallet is whitelisted!',
                     'success',
                     matchingLists
                 );
