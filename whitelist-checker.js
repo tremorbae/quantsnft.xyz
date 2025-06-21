@@ -15,20 +15,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         'Whitelist': new Set()
     };
     
-    // Load whitelist data
+    // Load whitelist data from CSV files for better size efficiency
     async function loadWhitelists() {
+        const csvFiles = {
+            'Contributor': 'Contributor.csv',
+            'Early Bird': 'Og.csv', // Early Bird list stored in Og.csv
+            'Whitelist': 'Whitelist.csv'
+        };
+
         try {
+            // Helper to fetch and parse a CSV file into an array of addresses
+            const fetchCsv = async (path) => {
+                const text = await fetch(path).then(r => {
+                    if (!r.ok) throw new Error(`HTTP ${r.status} for ${path}`);
+                    return r.text();
+                });
+                return text
+                    .split(/\r?\n/)       // split by newline
+                    .map(l => l.trim())    // trim whitespace
+                    .filter(Boolean);      // remove empty lines
+            };
+
+            // Load all files in parallel
             const [contributors, earlyBirds, whitelist] = await Promise.all([
-                fetch('whitelists/contributors.json').then(res => res.json()),
-                fetch('whitelists/early-birds.json').then(res => res.json()),
-                fetch('whitelists/whitelist.json').then(res => res.json())
+                fetchCsv(csvFiles['Contributor']),
+                fetchCsv(csvFiles['Early Bird']),
+                fetchCsv(csvFiles['Whitelist'])
             ]);
-            
-            whitelists['Contributor'] = new Set(contributors.addresses.map(addr => addr.toLowerCase()));
-            whitelists['Early Bird'] = new Set(earlyBirds.addresses.map(addr => addr.toLowerCase()));
-            whitelists['Whitelist'] = new Set(whitelist.addresses.map(addr => addr.toLowerCase()));
-            
-            console.log('Whitelists loaded successfully');
+
+            // Populate sets (normalized to lowercase)
+            whitelists['Contributor'] = new Set(contributors.map(a => a.toLowerCase()));
+            whitelists['Early Bird'] = new Set(earlyBirds.map(a => a.toLowerCase()));
+            whitelists['Whitelist'] = new Set(whitelist.map(a => a.toLowerCase()));
+
+            console.log('Whitelists loaded successfully (CSV)');
         } catch (error) {
             console.error('Error loading whitelists:', error);
             showResult('Error loading whitelist data. Please try again later.', 'error');
