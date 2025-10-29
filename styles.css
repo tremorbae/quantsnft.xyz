@@ -2147,10 +2147,6 @@ header.scrolled {
     padding: 0 !important;
   }
 
-  .hero-content h1 + h1 {
-    margin-top: -0.5rem !important; /* tighten the second line */
-  }
-
   .hero-content .glow-text {
     display: inline-block !important;
     line-height: 0.7 !important;
