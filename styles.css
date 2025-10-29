@@ -2132,19 +2132,20 @@ header.scrolled {
 
 @media (max-width: 768px) {
   .hero-content h1 {
-    font-size: 2.4rem !important;
-    line-height: 0.95 !important; /* tighter line spacing */
+    font-size: 2.3rem !important;
+    line-height: 0.75 !important;  /* super tight */
     margin-top: 0 !important;
     margin-bottom: 0 !important;
     padding: 0 !important;
   }
 
   .hero-content h1 + h1 {
-    margin-top: 0.1rem !important; /* tiny gap between lines */
+    margin-top: 0.05rem !important; /* barely any gap */
   }
 
   .hero {
-    padding-top: 5rem !important;
-    padding-bottom: 5rem !important;
+    padding-top: 4rem !important;
+    padding-bottom: 4rem !important;
   }
 }
+
