@@ -2132,20 +2132,19 @@ header.scrolled {
 
 @media (max-width: 768px) {
   .hero-content h1 {
-    font-size: 3rem; /* main QUANTS size */
-    margin: 0 !important;
-    line-height: 1.1 !important;
+    font-size: 2.4rem !important;
+    line-height: 0.95 !important; /* tighter line spacing */
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 !important;
   }
 
   .hero-content h1 + h1 {
-    font-size: 2rem; /* smaller “On Solana” */
-    margin-top: 0.4rem !important;
-    font-weight: 500; /* slightly lighter for contrast */
-    text-transform: uppercase; /* keeps it consistent */
-    opacity: 0.9; /* optional, gives a nice subtle effect */
+    margin-top: 0.1rem !important; /* tiny gap between lines */
   }
 
   .hero {
-    padding: 5rem 0;
+    padding-top: 5rem !important;
+    padding-bottom: 5rem !important;
   }
 }
