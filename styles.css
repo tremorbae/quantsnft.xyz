@@ -15,7 +15,7 @@
     --secondary-color: #83bec5;
     --accent-color: #ffb962;
     --dark-color: #83bec5;
-    --text-color: #ffffff;
+    --text-color: #000000;
     
     /* Breakpoints */
     --breakpoint-sm: 768px;  /* Tablet and up */
