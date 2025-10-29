@@ -2149,3 +2149,11 @@ header.scrolled {
   }
 }
 
+@media (max-width: 768px) {
+  .hero-content .glow-text {
+    display: block;
+    line-height: 0.75 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
